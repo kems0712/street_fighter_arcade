@@ -6,8 +6,6 @@ import math
 from pathlib import Path
 
 # --- IMPORTACIONES DEL SDK ---
-# Si te da error aquí, es porque te falta el archivo arcade_machine_sdk.py
-# Asegúrate de tenerlo o simularlo si estás probando localmente.
 try:
     from arcade_machine_sdk import GameBase, GameMeta, BASE_WIDTH, BASE_HEIGHT
 except ImportError:
@@ -39,7 +37,7 @@ class StreetFighterGame(GameBase):
         super().__init__(metadata)
         
         # --- CONFIGURACIÓN DE RESOLUCIÓN ---
-        # Tu juego original es 1200x600, el SDK es 1024x768
+        #juego original es 1200x600, el SDK es 1024x768
         self.original_width = 1200
         self.original_height = 600
         # Creamos un "lienzo" interno donde dibujaremos tu juego tal cual era
@@ -255,7 +253,6 @@ class StreetFighterGame(GameBase):
             sheet2 = self.swap_color(sheet2, (255, 255, 255), (100, 200, 255))
         
         # INSTANCIAR FIGHTERS (Importante: Fighter debe manejar sus rutas internamente o recibir assets cargados)
-        # NOTA: Para Fighter, asegúrate de que también use rutas relativas dentro de su clase.
         # Por ahora pasamos self para que fighter pueda acceder a assets si hiciera falta, o dejamos igual
         self.fighter_1 = Fighter(1, 200, 395, False, self.world_map_data[p1_char]["data"], sheet1, self.world_map_data[p1_char]["steps"], p1_char)
         self.fighter_2 = Fighter(2, 900, 395, True, self.world_map_data[p2_char]["data"], sheet2, self.world_map_data[p2_char]["steps"], p2_char)
