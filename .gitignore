@@ -1,0 +1,33 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Caches
+.sass-cache/
+.eslintcache/
+.stylelintcache/
+
+# Sistemas Operativos (Archivos basura)
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Entornos virtuales (Virtual Environments)
+venv/
+env/
+ENV/
+.env
+
+# IDEs (Configuraciones de editor que no deben compartirse)
+.vscode/
+.idea/
+*.swp
+
+# Logs
+*.log
+
+# Distribución / Empaquetado
+dist/
+build/
+*.egg-info/
