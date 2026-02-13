@@ -28,8 +28,6 @@ Un juego de combate 1vs1 donde dos luchadores se enfrentan en escenarios icónic
 | **Especial** | Y | O |
 | **Bloqueo** | F | P |
 
-## 🚀 Instalación y Ejecución
-
-1. Clonar el repositorio:
-   ```bash
-   git clone [https://github.com/TU_USUARIO/TU_REPOSITORIO.git](https://github.com/TU_USUARIO/TU_REPOSITORIO.git)
+🚀 Instalación y ejecución
+1.Clonar el repositorio:
+git clone https://github.com/kems0712/street_fighter_arcade.git
