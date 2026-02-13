@@ -1,4 +1,10 @@
 import pygame
+from pathlib import Path
+
+# --- GESTIÓN DE RUTAS (CRUCIAL PARA EL SDK) ---
+# Calculamos la ruta a la carpeta 'assets' basándonos en dónde está este archivo.
+# src/fighter.py -> subimos 1 nivel -> raíz -> assets
+ASSETS_DIR = Path(__file__).resolve().parent.parent / "assets"
 
 # --- CLASE PROYECTIL ---
 class Projectile(pygame.sprite.Sprite):
@@ -15,13 +21,18 @@ class Projectile(pygame.sprite.Sprite):
         
         try:
             for i in range(3): 
-                ruta = f"assets/imagenes/personajes/{char_type}/ataques/special_{i}.png"
-                img = pygame.image.load(ruta).convert_alpha()
+                # CAMBIO 1: Construcción de ruta segura con pathlib
+                ruta = ASSETS_DIR / "imagenes" / "personajes" / char_type / "ataques" / f"special_{i}.png"
+                
+                # Importante: convertir 'ruta' a string con str() para pygame
+                img = pygame.image.load(str(ruta)).convert_alpha()
                 img = pygame.transform.scale(img, (int(img.get_width() * 1.5), int(img.get_height() * 1.5)))
                 if direction == -1:
                     img = pygame.transform.flip(img, True, False)
                 self.images.append(img)
-        except Exception:
+        except Exception as e:
+            # Es útil imprimir el error para saber si falla la ruta
+            # print(f"Error cargando proyectil: {e}") 
             pass 
 
         if len(self.images) == 0:
@@ -108,19 +119,27 @@ class Fighter:
 
         # --- SISTEMA DE COOLDOWN PARA ATAQUE ESPECIAL ---
         self.last_special_attack = 0
-        self.special_cooldown = 5000 # 5000 milisegundos = 5 segundos
+        self.special_cooldown = 5000 # 5 Segundos (Según tu último código)
 
+        # CAMBIO 2: Carga de Sonidos con Rutas Seguras
         try:
-            self.sonido_golpe = pygame.mixer.Sound(f"assets/sonidos/personajes/{self.char_type}/golpe.wav")
-            self.sonido_hurt = pygame.mixer.Sound(f"assets/sonidos/personajes/{self.char_type}/hurt.wav")
-            self.sonido_bloqueo = pygame.mixer.Sound(f"assets/sonidos/combate/block.wav")
-            self.sonido_especial = pygame.mixer.Sound(f"assets/sonidos/personajes/{self.char_type}/especial.wav")
-            self.sonido_death = pygame.mixer.Sound(f"assets/sonidos/personajes/{self.char_type}/death.wav")
+            p_golpe = ASSETS_DIR / "sonidos" / "personajes" / self.char_type / "golpe.wav"
+            p_hurt = ASSETS_DIR / "sonidos" / "personajes" / self.char_type / "hurt.wav"
+            p_block = ASSETS_DIR / "sonidos" / "combate" / "block.wav"
+            p_special = ASSETS_DIR / "sonidos" / "personajes" / self.char_type / "especial.wav"
+            p_death = ASSETS_DIR / "sonidos" / "personajes" / self.char_type / "death.wav"
+
+            self.sonido_golpe = pygame.mixer.Sound(str(p_golpe))
+            self.sonido_hurt = pygame.mixer.Sound(str(p_hurt))
+            self.sonido_bloqueo = pygame.mixer.Sound(str(p_block))
+            self.sonido_especial = pygame.mixer.Sound(str(p_special))
+            self.sonido_death = pygame.mixer.Sound(str(p_death))
             
-            self.sonido_death.set_volume(20) 
-            self.sonido_golpe.set_volume(20)
-            self.sonido_hurt.set_volume(20)
-        except:
+            self.sonido_death.set_volume(0.2) # 0.2 es equivalente a tu 20 anterior aprox
+            self.sonido_golpe.set_volume(0.2)
+            self.sonido_hurt.set_volume(0.2)
+        except Exception as e:
+            # print(f"Error sonidos {self.char_type}: {e}")
             pass
 
     def cargar_animaciones(self, sprite_sheet, animation_steps):
@@ -150,7 +169,6 @@ class Fighter:
 
         key = pygame.key.get_pressed()
         
-        # Capturamos el tiempo actual para calcular el cooldown
         current_time = pygame.time.get_ticks()
 
         if not self.attacking and self.alive and not round_over:
@@ -178,11 +196,10 @@ class Fighter:
                         self.attack_type = 2
                         self.attack()
                     elif key[pygame.K_y]: 
-                        # RESTRICCIÓN DE 15 SEGUNDOS PARA P1
                         if current_time - self.last_special_attack >= self.special_cooldown:
                             self.attack_type = 3 
                             self.attack()
-                            self.last_special_attack = current_time # Guardamos el momento exacto del ataque
+                            self.last_special_attack = current_time 
 
             if self.player == 2:
                 if key[pygame.K_DOWN]: self.crouch = True
@@ -208,7 +225,6 @@ class Fighter:
                         self.attack_type = 2
                         self.attack()
                     elif key[pygame.K_o]: 
-                        # RESTRICCIÓN DE 15 SEGUNDOS PARA P2
                         if current_time - self.last_special_attack >= self.special_cooldown:
                             self.attack_type = 3
                             self.attack()
@@ -300,9 +316,9 @@ class Fighter:
                 
                 # ZONERS (Proyectiles)
                 if self.char_type in ["ryu", "ken", "dhalsim", "guile"]:
+                    # Disparar en frame 2 para coordinar con animación
                     if self.frame_index == 2 and not self.special_attack_fired:
                         
-                        # Calculamos la dirección basándonos en dónde está el rival
                         if target.rect.centerx > self.rect.centerx:
                             direction = 1  
                         else:
