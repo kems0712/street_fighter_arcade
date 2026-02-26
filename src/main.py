@@ -37,8 +37,8 @@ class StreetFighterGame(GameBase):
         
         #CONFIGURACION DE RESOLUCION
         # juego original es 1200x600, el SDK es 1024x768
-        self.original_width = 1024
-        self.original_height = 768
+        self.original_width = 1200
+        self.original_height = 600
         # Creamos un lienzo interno
         self.game_canvas = pygame.Surface((self.original_width, self.original_height))
 
