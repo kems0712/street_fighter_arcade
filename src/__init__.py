@@ -1,0 +1,1 @@
+# Paquete del juego Street Fighter.

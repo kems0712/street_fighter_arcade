@@ -5,11 +5,11 @@ import os
 import math
 from pathlib import Path
 
-# --- IMPORTACIONES DEL SDK ---
+#IMPORTACIONES DEL SDK
 try:
     from arcade_machine_sdk import GameBase, GameMeta, BASE_WIDTH, BASE_HEIGHT
 except ImportError:
-    # Simulador básico por si no tienes el SDK instalado aún para pruebas
+    #simulador basico para pruebas
     print("SDK no encontrado. Usando modo compatibilidad para pruebas.")
     class GameBase:
         def __init__(self, meta): pass
@@ -24,11 +24,10 @@ except ImportError:
         def add_author(self, a): return self
     BASE_WIDTH, BASE_HEIGHT = 1024, 768
 
-# Importar tu clase Fighter
+# Importar clase Fighter
 from fighter import Fighter
 
-# --- GESTIÓN DE RUTAS (REQUISITO SDK) ---
-# Calcula la ruta base: Si main.py está en /src, subimos un nivel para llegar a la raíz
+#GESTION DE RUTAS (REQUISITO SDK)
 GAME_DIR = Path(__file__).resolve().parent.parent 
 ASSETS_DIR = GAME_DIR / "assets"
 
@@ -36,26 +35,26 @@ class StreetFighterGame(GameBase):
     def __init__(self, metadata: GameMeta):
         super().__init__(metadata)
         
-        # --- CONFIGURACIÓN DE RESOLUCIÓN ---
-        #juego original es 1200x600, el SDK es 1024x768
-        self.original_width = 1200
-        self.original_height = 600
-        # Creamos un "lienzo" interno donde dibujaremos tu juego tal cual era
+        #CONFIGURACION DE RESOLUCION
+        # juego original es 1200x600, el SDK es 1024x768
+        self.original_width = 1024
+        self.original_height = 768
+        # Creamos un lienzo interno
         self.game_canvas = pygame.Surface((self.original_width, self.original_height))
 
-        # --- VARIABLES DE ESTADO (Antes eran Globales) ---
-        self.game_state = "intro" # intro, menu, select, game
+        #VARIABLES DE ESTADO
+        self.game_state = "intro"
         self.intro_index = 0
         self.current_music = None
         self.last_state = None
         
-        # Selección de personajes
+        #Seleccion de personajes
         self.p1_pos = [0, 0]
         self.p2_pos = [3, 0]
         self.p1_ready = False
         self.p2_ready = False
         
-        # Combate
+        #Combate
         self.fighter_1 = None
         self.fighter_2 = None
         self.background_fight = []
@@ -69,15 +68,15 @@ class StreetFighterGame(GameBase):
         self.camera_x = 0
         self.audio_reproducido = False
         
-        # Timers
+        #timers
         self.timer_last_update = 0
         self.last_count_update = 0
         
-        # Grupos de sprites
+        #grupos de sprites
         self.effects_group = pygame.sprite.Group()
         self.projectiles_group = pygame.sprite.Group()
 
-        # Datos estáticos (Mapas, Grid)
+        #satos estaticos (Mapas, Grid)
         self.ROWS, self.COLS = 2, 4
         self.CELL_SIZE = 105
         self.OFFSET_X = (self.original_width // 2) - (self.COLS * self.CELL_SIZE // 2)
@@ -99,7 +98,7 @@ class StreetFighterGame(GameBase):
             "dhalsim": {"country": "india",   "pos": (350 ,205),"data": [118 ,1.8 ,[30 ,30],"right"],"steps":   [6 ,6 ,3 ,4 ,3 ,4 ,4 ,1 ,1 ,7, 4]},
         }
 
-        # Diccionarios de recursos
+        #diccionarios de recursos
         self.icons = {}
         self.portraits = {}
         self.name_logos = {}
@@ -108,9 +107,8 @@ class StreetFighterGame(GameBase):
         self.timer_sprites_yellow = []
         self.timer_sprites_red = []
 
-    # --- MÉTODOS AUXILIARES (Adaptados para usar self y rutas) ---
+    #AUXILIARES
     def get_asset_path(self, relative_path):
-        """Convierte ruta relativa 'imagenes/...' a absoluta segura"""
         return str(ASSETS_DIR / relative_path)
 
     def swap_color(self, image, color_original, color_nuevo):
@@ -120,7 +118,6 @@ class StreetFighterGame(GameBase):
         return new_surf
 
     def play_music(self, music_file, loop=-1):
-        # music_file debe ser relativo a assets, ej: "sonidos/musica/intro.mp3"
         full_path = self.get_asset_path(music_file)
         if self.current_music != full_path:
             if os.path.exists(full_path):
@@ -133,7 +130,6 @@ class StreetFighterGame(GameBase):
         frames = []
         folder_path = ASSETS_DIR / "imagenes" / "escenarios" / char_name
         if folder_path.exists():
-            # Listar archivos
             files = sorted([f.name for f in folder_path.glob("fondo_*.png")])
             for f in files:
                 img = pygame.image.load(str(folder_path / f)).convert_alpha()
@@ -163,17 +159,14 @@ class StreetFighterGame(GameBase):
             pygame.draw.rect(self.game_canvas, (255,255,0), (x + empty_space, y, current_width, 25))
 
     def load_all_assets(self):
-        # Cargar Fondo Selección
         bg_s_path = self.get_asset_path("imagenes/escenarios/seleccion.png")
         if os.path.exists(bg_s_path):
             self.background_select = pygame.transform.scale(pygame.image.load(bg_s_path).convert(), (self.original_width, self.original_height))
         
-        # Cargar Fondo Menú
         bg_m_path = self.get_asset_path("imagenes/escenarios/menu.jpg")
         if os.path.exists(bg_m_path):
              self.background_menu = pygame.transform.scale(pygame.image.load(bg_m_path).convert(), (self.original_width, self.original_height))
 
-        # Cargar Datos Mapa
         for name, info in self.world_map_data.items():
             icon_p = self.get_asset_path(f"imagenes/icono/icons/icon_{name}.png")
             port_p = self.get_asset_path(f"imagenes/icono/bigimagenes/big_{name}.png")
@@ -195,7 +188,6 @@ class StreetFighterGame(GameBase):
                 if os.path.exists(path_col):
                     self.maps_color[c] = pygame.transform.scale(pygame.image.load(path_col).convert_alpha(), (60, 40))
 
-        # Cargar UI Extra
         try:
             ko_path = self.get_asset_path("imagenes/icono/ko.png")
             self.ko_img = pygame.transform.scale(pygame.image.load(ko_path).convert_alpha(), (100, 50))
@@ -208,13 +200,11 @@ class StreetFighterGame(GameBase):
         cont_path = self.get_asset_path("imagenes/icono/pushstart.png")
         self.continue_img = pygame.transform.scale(pygame.image.load(cont_path).convert_alpha(), (400, 100))
 
-        # Cargar Timer Sprites
         path_yellow = ASSETS_DIR / "imagenes/icono/timer"
         path_red = ASSETS_DIR / "imagenes/icono/timer_blue"
         COLOR_ORIGINAL_NUMEROS = (255, 255, 0)
 
         for i in range(10):
-            # Amarillo
             file_path = path_yellow / f"{i}.png"
             if file_path.exists():
                 img = pygame.image.load(str(file_path)).convert_alpha()
@@ -223,7 +213,6 @@ class StreetFighterGame(GameBase):
                 s = pygame.Surface((55, 75)); s.fill((255,255,0))
                 self.timer_sprites_yellow.append(s)
             
-            # Rojo
             file_path_r = path_red / f"{i}.png"
             if file_path_r.exists():
                 img = pygame.image.load(str(file_path_r)).convert_alpha()
@@ -242,7 +231,6 @@ class StreetFighterGame(GameBase):
         self.background_fight = self.load_stage(chosen_stage)
         self.bg_index = 0
         
-        # Cargar Sheets usando Rutas Seguras
         path_s1 = self.get_asset_path(f"imagenes/personajes/{p1_char}/sprites/{p1_char.capitalize()}.png")
         path_s2 = self.get_asset_path(f"imagenes/personajes/{p2_char}/sprites/{p2_char.capitalize()}.png")
         
@@ -252,8 +240,6 @@ class StreetFighterGame(GameBase):
         if p1_char == p2_char:
             sheet2 = self.swap_color(sheet2, (255, 255, 255), (100, 200, 255))
         
-        # INSTANCIAR FIGHTERS (Importante: Fighter debe manejar sus rutas internamente o recibir assets cargados)
-        # Por ahora pasamos self para que fighter pueda acceder a assets si hiciera falta, o dejamos igual
         self.fighter_1 = Fighter(1, 200, 395, False, self.world_map_data[p1_char]["data"], sheet1, self.world_map_data[p1_char]["steps"], p1_char)
         self.fighter_2 = Fighter(2, 900, 395, True, self.world_map_data[p2_char]["data"], sheet2, self.world_map_data[p2_char]["steps"], p2_char)
 
@@ -270,12 +256,10 @@ class StreetFighterGame(GameBase):
         self.last_count_update = pygame.time.get_ticks()
         self.audio_reproducido = False 
 
-    # --- MÉTODOS DEL SDK (OBLIGATORIOS) ---
-
+    #METODOS DEL SDK
     def start(self, surface: pygame.Surface) -> None:
         super().start(surface)
         pygame.mixer.pre_init(44100, -16, 2, 2048)
-        # Cargar Fuentes
         try:
             f_path = self.get_asset_path("fuentes/ARCADEPI.ttf")
             self.score_font = pygame.font.Font(f_path, 80)
@@ -284,7 +268,6 @@ class StreetFighterGame(GameBase):
             self.score_font = pygame.font.SysFont("arial", 80)
             self.count_font = pygame.font.SysFont("arial", 80)
 
-        # Sonidos
         try:
             self.sonido_fight = pygame.mixer.Sound(self.get_asset_path("sonidos/voces/round1_fight.mp3"))
             self.sonido_fight.set_volume(1.0)
@@ -299,9 +282,12 @@ class StreetFighterGame(GameBase):
 
     def handle_events(self, events: list[pygame.event.Event]):
         for event in events:
-            # NO manejar QUIT, el SDK lo hace
-            
-            if self.game_state == "menu":
+            #SALTAR INTRO CON ENTER
+            if self.game_state == "intro":
+                if event.type == pygame.KEYDOWN and (event.key == pygame.K_RETURN or event.key == pygame.K_SPACE):
+                    self.game_state = "menu"
+                    
+            elif self.game_state == "menu":
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
                     self.game_state = "select"
             
@@ -326,14 +312,13 @@ class StreetFighterGame(GameBase):
     def update(self, dt: float):
         current_time = pygame.time.get_ticks()
 
-        # Gestión de música por estado
         if self.game_state != self.last_state:
             if self.game_state == "intro": self.play_music("sonidos/musica/intro.mp3")
             elif self.game_state in ["menu", "select"]: self.play_music("sonidos/musica/select.mp3")
             self.last_state = self.game_state
 
         if self.game_state == "intro":
-            pass # La intro se actualiza sola al renderizar frames
+            pass
 
         elif self.game_state == "select":
             if self.p1_ready and self.p2_ready:
@@ -342,7 +327,6 @@ class StreetFighterGame(GameBase):
 
         elif self.game_state == "game":
             if self.fighter_1 and self.fighter_2:
-                # Intro Count Logic
                 if self.intro_count > 0:
                     if self.intro_count == 2 and not self.audio_reproducido and self.sonido_fight:
                         self.sonido_fight.play()
@@ -352,11 +336,9 @@ class StreetFighterGame(GameBase):
                         self.intro_count -= 1
                         self.last_count_update = current_time
                     
-                    # Update sprites para idle animation durante conteo
                     self.fighter_1.update(self.fighter_2, self.effects_group, self.projectiles_group)
                     self.fighter_2.update(self.fighter_1, self.effects_group, self.projectiles_group)
                 else:
-                    # FIGHT!
                     if not self.show_fight_img and not self.round_over:
                         self.show_fight_img = True
                         self.fight_img_timer = current_time
@@ -388,7 +370,6 @@ class StreetFighterGame(GameBase):
                     
                     self.effects_group.update(self.camera_x)
 
-                    # Reiniciar partida
                     if self.round_over and current_time - self.round_over_time > 3000:
                         if self.score[0] >= 2 or self.score[1] >= 2:
                             self.game_state = "menu"
@@ -398,13 +379,11 @@ class StreetFighterGame(GameBase):
                             self.start_fight()
 
     def render(self, surface: pygame.Surface):
-        # 1. Dibujar todo en nuestro CANVAS interno (1200x600)
         self.game_canvas.fill((0,0,0))
         current_time = pygame.time.get_ticks()
 
         if self.game_state == "intro":
             frame_num = int(self.intro_index)
-            # Nota: Carga dinámica en render puede ser lenta, idealmente precargar
             intro_path = self.get_asset_path(f"imagenes/intro/intro_{frame_num}.jpg")
             if os.path.exists(intro_path):
                 img = pygame.image.load(intro_path).convert()
@@ -412,9 +391,6 @@ class StreetFighterGame(GameBase):
                 self.intro_index += 0.45
             else:
                 self.game_state = "menu"
-            
-            # Texto press start
-            self.draw_text("PRESS ENTER", self.score_font, (255,255,255), self.original_width//2, self.original_height-50, True)
 
         elif self.game_state == "menu":
             self.game_canvas.blit(self.background_menu, (0, 0))
@@ -431,18 +407,24 @@ class StreetFighterGame(GameBase):
             p1_char = self.fighters_grid[self.p1_pos[1]][self.p1_pos[0]]
             p2_char = self.fighters_grid[self.p2_pos[1]][self.p2_pos[0]]
             
-            # Mapas
+            #DIBUJAR LOGOS DE NOMBRES EN SELECCION
+            if p1_char in self.name_logos:
+                logo_p1 = pygame.transform.scale(self.name_logos[p1_char], (160, 80))
+                self.game_canvas.blit(logo_p1, (50, 40))
+                
+            if p2_char in self.name_logos:
+                logo_p2 = pygame.transform.scale(self.name_logos[p2_char], (160, 80))
+                self.game_canvas.blit(logo_p2, (self.original_width - logo_p2.get_width() - 50, 40))
+
             for name, data in self.world_map_data.items():
                 img = self.maps_color.get(data["country"]) if (name in [p1_char, p2_char] and (current_time // 200) % 2 == 0) else self.maps_bw.get(data["country"])
                 if img: self.game_canvas.blit(img, data["pos"])
 
-            # Portraits
             if not self.p1_ready or (current_time // 100) % 2 == 0:
                 self.game_canvas.blit(self.portraits[p1_char], (-5, 305))
             if not self.p2_ready or (current_time // 100) % 2 == 0:
                 self.game_canvas.blit(pygame.transform.flip(self.portraits[p2_char], True, False), (self.original_width - 250, 300))
             
-            # Grilla Iconos
             for r in range(self.ROWS):
                 for c in range(self.COLS):
                     name = self.fighters_grid[r][c]
@@ -450,7 +432,6 @@ class StreetFighterGame(GameBase):
                     self.game_canvas.blit(self.icons[name], (x, y))
                     pygame.draw.rect(self.game_canvas, (255,255,255), (x, y, self.CELL_SIZE, self.CELL_SIZE), 1)
             
-            # Cursores
             glow = abs(math.sin(current_time * 0.01)) * 255
             pygame.draw.rect(self.game_canvas, (0, glow, glow) if not self.p1_ready else (255,255,255), 
                             (self.OFFSET_X + self.p1_pos[0] * self.CELL_SIZE, self.OFFSET_Y + self.p1_pos[1] * self.CELL_SIZE, self.CELL_SIZE, self.CELL_SIZE), 6)
@@ -459,16 +440,26 @@ class StreetFighterGame(GameBase):
 
         elif self.game_state == "game":
             if self.fighter_1 and self.fighter_2:
-                # Fondo
                 self.bg_index += 0.12
                 if self.bg_index >= len(self.background_fight): self.bg_index = 0
                 self.game_canvas.blit(self.background_fight[int(self.bg_index)], (0 - self.camera_x, 0))
 
-                # HUD
                 self.draw_health_bar(self.fighter_1.health, 170, 30, False)
                 self.draw_health_bar(self.fighter_2.health, 620, 30, True)
                 
-                # Cooldown Indicators
+                #DIBUJAR NOMBRES DE LOS PERSONAJES EN JUEGO
+                p1_char_game = self.fighters_grid[self.p1_pos[1]][self.p1_pos[0]]
+                p2_char_game = self.fighters_grid[self.p2_pos[1]][self.p2_pos[0]]
+                
+                if p1_char_game in self.name_logos:
+                    logo_p1 = pygame.transform.scale(self.name_logos[p1_char_game], (140, 80))
+                    self.game_canvas.blit(logo_p1, (20, 0))
+                    
+                if p2_char_game in self.name_logos:
+                    logo_p2 = pygame.transform.scale(self.name_logos[p2_char_game], (120, 80))
+                    self.game_canvas.blit(logo_p2, (self.original_width - 180, 0))
+                
+                # Cooldown indicadors
                 time_now = pygame.time.get_ticks()
                 color_p1 = (0, 255, 0) if (time_now - self.fighter_1.last_special_attack >= self.fighter_1.special_cooldown) else (255, 0, 0)
                 pygame.draw.circle(self.game_canvas, color_p1, (50, 80), 10)
@@ -482,11 +473,9 @@ class StreetFighterGame(GameBase):
                     ko_rect = self.ko_img.get_rect(center=(self.original_width // 2, 42))
                     self.game_canvas.blit(self.ko_img, ko_rect)
                 
-                # Scores y Timer
                 self.draw_text(str(self.score[0]), self.score_font, (255,255,0), self.original_width//2 - 100, 70)
                 self.draw_text(str(self.score[1]), self.score_font, (255,255,0), self.original_width//2 + 60, 70)
                 
-                # Dibujar Timer Gráfico
                 display_time = max(0, int(self.fight_timer))
                 time_str = str(display_time).zfill(2)
                 sprites = self.timer_sprites_yellow if display_time > 10 else self.timer_sprites_red
@@ -497,16 +486,14 @@ class StreetFighterGame(GameBase):
                     self.game_canvas.blit(spr, (cur_x, 70))
                     cur_x += spr.get_width()
 
-                # Personajes y Efectos
                 self.fighter_1.draw(self.game_canvas, self.camera_x)
                 self.fighter_2.draw(self.game_canvas, self.camera_x)
                 
                 for p in self.projectiles_group: p.draw(self.game_canvas, self.camera_x)
                 for e in self.effects_group: e.draw(self.game_canvas, self.camera_x)
 
-                # Overlays (Intro count, Fight, Win)
                 if self.intro_count > 0:
-                    if self.intro_count < 10: # Para evitar error de indice si count es alto
+                    if self.intro_count < 10: 
                         cnt_img = self.timer_sprites_red[self.intro_count]
                         cnt_img = pygame.transform.scale(cnt_img, (80, 150))
                         cnt_rect = cnt_img.get_rect(center=(self.original_width//2, self.original_height//2))
@@ -529,13 +516,15 @@ class StreetFighterGame(GameBase):
                     big = pygame.transform.scale(img, (img.get_width()*1.5, img.get_height()*1.5))
                     self.game_canvas.blit(big, big.get_rect(center=(self.original_width//2, self.original_height//2)))
 
-        # 2. ESCALAR Y DIBUJAR EN SURFACE DEL SDK (1024x768)
+        # 2.ESCALAR Y DIBUJAR EN SURFACE DEL SDK
         scaled_surface = pygame.transform.scale(self.game_canvas, (BASE_WIDTH, BASE_HEIGHT))
         surface.blit(scaled_surface, (0, 0))
 
 
-# --- EJECUCIÓN INDEPENDIENTE (PARA PRUEBAS) ---
+#EJECUCION INDEPENDIENTE (SIMULADOR DE ARCADE MACHINE)
 if __name__ == "__main__":
+    import sys
+    
     if not pygame.get_init():
         pygame.init()
         
@@ -548,4 +537,33 @@ if __name__ == "__main__":
             .add_author("Keiber Medina y Juan Rodríguez"))
 
     game = StreetFighterGame(metadata)
-    game.run_independently()
+
+    # 1.creamos nuestra propia ventana porque el SDK estA ausente o incompleto
+    pantalla_prueba = pygame.display.set_mode((1024, 768))
+    pygame.display.set_caption("Prueba Local - Street Fighters 2 (Simulador SDK)")
+    reloj = pygame.time.Clock()
+
+    # 2.iniciamos el juego pasandole la ventana
+    game.start(pantalla_prueba)
+
+    # 3.bucle simulado
+    corriendo = True
+    while corriendo:
+        dt = reloj.tick(60) / 1000.0
+        
+        eventos = pygame.event.get()
+        for evento in eventos:
+            if evento.type == pygame.QUIT:
+                corriendo = False
+                
+        #metodos obligatorios
+        game.handle_events(eventos)
+        game.update(dt)
+        game.render(pantalla_prueba)
+        
+        pygame.display.flip()
+
+    # 4.cerramos todo al salir
+    game.stop()
+    pygame.quit()
+    sys.exit()

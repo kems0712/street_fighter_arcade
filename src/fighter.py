@@ -1,12 +1,10 @@
 import pygame
 from pathlib import Path
 
-# --- GESTIÓN DE RUTAS (CRUCIAL PARA EL SDK) ---
-# Calculamos la ruta a la carpeta 'assets' basándonos en dónde está este archivo.
-# src/fighter.py -> subimos 1 nivel -> raíz -> assets
+#GESTION DE RUTAS
 ASSETS_DIR = Path(__file__).resolve().parent.parent / "assets"
 
-# --- CLASE PROYECTIL ---
+#CLASE PROYECTIL
 class Projectile(pygame.sprite.Sprite):
     def __init__(self, x, y, direction, char_type, player_owner): 
         super().__init__()
@@ -21,17 +19,16 @@ class Projectile(pygame.sprite.Sprite):
         
         try:
             for i in range(3): 
-                # CAMBIO 1: Construcción de ruta segura con pathlib
+                #construcción de ruta segura con pathlib
                 ruta = ASSETS_DIR / "imagenes" / "personajes" / char_type / "ataques" / f"special_{i}.png"
                 
-                # Importante: convertir 'ruta' a string con str() para pygame
+                #convertir ruta a string con str() para pygame
                 img = pygame.image.load(str(ruta)).convert_alpha()
                 img = pygame.transform.scale(img, (int(img.get_width() * 1.5), int(img.get_height() * 1.5)))
                 if direction == -1:
                     img = pygame.transform.flip(img, True, False)
                 self.images.append(img)
         except Exception as e:
-            # Es útil imprimir el error para saber si falla la ruta
             # print(f"Error cargando proyectil: {e}") 
             pass 
 
@@ -58,7 +55,7 @@ class Projectile(pygame.sprite.Sprite):
         if self.rect.right < -200 or self.rect.left > 2200:
             self.kill()
 
-        # LÓGICA DE PROTECCIÓN DE DUEÑO 
+        #LOGICA DE PROTECCION DE DUEÑO 
         if self.player_owner != target.player:
             if self.rect.colliderect(target.rect):
                 if not target.hit:
@@ -78,7 +75,7 @@ class Projectile(pygame.sprite.Sprite):
         surface.blit(self.image, (self.rect.x - camera_x, self.rect.y))
 
 
-# --- CLASE FIGHTER ---
+#CLASE FIGHTER
 class Fighter:
     def __init__(self, player, x, y, flip, data, sprite_sheet, animation_steps, char_type):
         self.player = player
@@ -117,11 +114,11 @@ class Fighter:
         
         self.special_attack_fired = False
 
-        # --- SISTEMA DE COOLDOWN PARA ATAQUE ESPECIAL ---
+        #SISTEMA DE COOLDOWN PARA ATAQUE ESPECIAL
         self.last_special_attack = 0
-        self.special_cooldown = 5000 # 5 Segundos (Según tu último código)
+        self.special_cooldown = 5000 # 5 Segundos
 
-        # CAMBIO 2: Carga de Sonidos con Rutas Seguras
+        #Carga de sonidos con rutas seguras
         try:
             p_golpe = ASSETS_DIR / "sonidos" / "personajes" / self.char_type / "golpe.wav"
             p_hurt = ASSETS_DIR / "sonidos" / "personajes" / self.char_type / "hurt.wav"
@@ -135,9 +132,9 @@ class Fighter:
             self.sonido_especial = pygame.mixer.Sound(str(p_special))
             self.sonido_death = pygame.mixer.Sound(str(p_death))
             
-            self.sonido_death.set_volume(0.2) # 0.2 es equivalente a tu 20 anterior aprox
-            self.sonido_golpe.set_volume(0.2)
-            self.sonido_hurt.set_volume(0.2)
+            self.sonido_death.set_volume(20)
+            self.sonido_golpe.set_volume(20)
+            self.sonido_hurt.set_volume(20)
         except Exception as e:
             # print(f"Error sonidos {self.char_type}: {e}")
             pass
@@ -316,7 +313,7 @@ class Fighter:
                 
                 # ZONERS (Proyectiles)
                 if self.char_type in ["ryu", "ken", "dhalsim", "guile"]:
-                    # Disparar en frame 2 para coordinar con animación
+                    # Disparar en frame 2 para coordinar con animacin
                     if self.frame_index == 2 and not self.special_attack_fired:
                         
                         if target.rect.centerx > self.rect.centerx:
@@ -334,14 +331,21 @@ class Fighter:
                         try: self.sonido_especial.play()
                         except: pass
 
-                # RUSHERS (Físicos)
+                # RUSHERS (Fisicos)
                 elif self.char_type in ["honda", "blanka", "chunli"]:
-                    velocidad_especial = 15
-                    if self.flip: self.rect.x -= velocidad_especial
-                    else: self.rect.x += velocidad_especial
-                    self.gestionar_golpe_fisico(target, 20)
+                    # 1.dejar de avanzar si ya conectaron el golpe
+                    if not self.damage_applied: 
+                        velocidad_especial = 15
+                        if self.flip: self.rect.x -= velocidad_especial
+                        else: self.rect.x += velocidad_especial
+                        
+                        # 2.limite de pantalla manual forzado
+                        if self.rect.left < 0: self.rect.left = 0
+                        if self.rect.right > 1200: self.rect.right = 1200
+                        
+                        self.gestionar_golpe_fisico(target, 20)
 
-                # GRAPPLERS (Agarres/Área)
+                # GRAPPLERS (Agarres/area)
                 elif self.char_type == "zangief":
                     area_rect = pygame.Rect(self.rect.x - 40, self.rect.y, self.rect.width + 80, self.rect.height)
                     if area_rect.colliderect(target.rect):
