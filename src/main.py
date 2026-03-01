@@ -4,25 +4,7 @@ import sys
 import os
 import math
 from pathlib import Path
-
-#IMPORTACIONES DEL SDK
-try:
-    from arcade_machine_sdk import GameBase, GameMeta, BASE_WIDTH, BASE_HEIGHT
-except ImportError:
-    #simulador basico para pruebas
-    print("SDK no encontrado. Usando modo compatibilidad para pruebas.")
-    class GameBase:
-        def __init__(self, meta): pass
-        def start(self, surf): pass
-        def stop(self): pass
-    class GameMeta:
-        def with_title(self, t): return self
-        def with_description(self, d): return self
-        def with_release_date(self, d): return self
-        def with_group_number(self, n): return self
-        def add_tag(self, t): return self
-        def add_author(self, a): return self
-    BASE_WIDTH, BASE_HEIGHT = 1024, 768
+from arcade_machine_sdk import GameBase, GameMeta, BASE_WIDTH, BASE_HEIGHT
 
 # Importar clase Fighter
 from fighter import Fighter
