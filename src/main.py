@@ -4,25 +4,7 @@ import sys
 import os
 import math
 from pathlib import Path
-
-#IMPORTACIONES DEL SDK
-try:
-    from arcade_machine_sdk import GameBase, GameMeta, BASE_WIDTH, BASE_HEIGHT
-except ImportError:
-    #simulador basico para pruebas
-    print("SDK no encontrado. Usando modo compatibilidad para pruebas.")
-    class GameBase:
-        def __init__(self, meta): pass
-        def start(self, surf): pass
-        def stop(self): pass
-    class GameMeta:
-        def with_title(self, t): return self
-        def with_description(self, d): return self
-        def with_release_date(self, d): return self
-        def with_group_number(self, n): return self
-        def add_tag(self, t): return self
-        def add_author(self, a): return self
-    BASE_WIDTH, BASE_HEIGHT = 1024, 768
+from arcade_machine_sdk import GameBase, GameMeta, BASE_WIDTH, BASE_HEIGHT
 
 # Importar clase Fighter
 from fighter import Fighter
@@ -378,7 +360,7 @@ class StreetFighterGame(GameBase):
                         else:
                             self.start_fight()
 
-    def render(self, surface: pygame.Surface):
+    def render(self):
         self.game_canvas.fill((0,0,0))
         current_time = pygame.time.get_ticks()
 
@@ -518,17 +500,13 @@ class StreetFighterGame(GameBase):
 
         # 2.ESCALAR Y DIBUJAR EN SURFACE DEL SDK
         scaled_surface = pygame.transform.scale(self.game_canvas, (BASE_WIDTH, BASE_HEIGHT))
-        surface.blit(scaled_surface, (0, 0))
+        self.surface.blit(scaled_surface, (0, 0))
 
 
-#EJECUCION INDEPENDIENTE (SIMULADOR DE ARCADE MACHINE)
-if __name__ == "__main__":
-    import sys
-    
-    if not pygame.get_init():
-        pygame.init()
-        
-    metadata = (GameMeta()
+if not pygame.get_init():
+    pygame.init()
+
+metadata = (GameMeta()
             .with_title("Street Fighters 2")
             .with_description("Clásico juego de pelea arcade")
             .with_release_date("10/02/2026")
@@ -536,34 +514,7 @@ if __name__ == "__main__":
             .add_tag("Pelea")
             .add_author("Keiber Medina y Juan Rodríguez"))
 
-    game = StreetFighterGame(metadata)
+game = StreetFighterGame(metadata)
 
-    # 1.creamos nuestra propia ventana porque el SDK estA ausente o incompleto
-    pantalla_prueba = pygame.display.set_mode((1024, 768))
-    pygame.display.set_caption("Prueba Local - Street Fighters 2 (Simulador SDK)")
-    reloj = pygame.time.Clock()
-
-    # 2.iniciamos el juego pasandole la ventana
-    game.start(pantalla_prueba)
-
-    # 3.bucle simulado
-    corriendo = True
-    while corriendo:
-        dt = reloj.tick(60) / 1000.0
-        
-        eventos = pygame.event.get()
-        for evento in eventos:
-            if evento.type == pygame.QUIT:
-                corriendo = False
-                
-        #metodos obligatorios
-        game.handle_events(eventos)
-        game.update(dt)
-        game.render(pantalla_prueba)
-        
-        pygame.display.flip()
-
-    # 4.cerramos todo al salir
-    game.stop()
-    pygame.quit()
-    sys.exit()
+if __name__ == "__main__":
+    game.run_independently()
