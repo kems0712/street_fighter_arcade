@@ -503,14 +503,10 @@ class StreetFighterGame(GameBase):
         surface.blit(scaled_surface, (0, 0))
 
 
-#EJECUCION INDEPENDIENTE (SIMULADOR DE ARCADE MACHINE)
-if __name__ == "__main__":
-    import sys
-    
-    if not pygame.get_init():
-        pygame.init()
-        
-    metadata = (GameMeta()
+if not pygame.get_init():
+    pygame.init()
+
+metadata = (GameMeta()
             .with_title("Street Fighters 2")
             .with_description("Clásico juego de pelea arcade")
             .with_release_date("10/02/2026")
@@ -518,34 +514,7 @@ if __name__ == "__main__":
             .add_tag("Pelea")
             .add_author("Keiber Medina y Juan Rodríguez"))
 
-    game = StreetFighterGame(metadata)
+game = StreetFighterGame(metadata)
 
-    # 1.creamos nuestra propia ventana porque el SDK estA ausente o incompleto
-    pantalla_prueba = pygame.display.set_mode((1024, 768))
-    pygame.display.set_caption("Prueba Local - Street Fighters 2 (Simulador SDK)")
-    reloj = pygame.time.Clock()
-
-    # 2.iniciamos el juego pasandole la ventana
-    game.start(pantalla_prueba)
-
-    # 3.bucle simulado
-    corriendo = True
-    while corriendo:
-        dt = reloj.tick(60) / 1000.0
-        
-        eventos = pygame.event.get()
-        for evento in eventos:
-            if evento.type == pygame.QUIT:
-                corriendo = False
-                
-        #metodos obligatorios
-        game.handle_events(eventos)
-        game.update(dt)
-        game.render(pantalla_prueba)
-        
-        pygame.display.flip()
-
-    # 4.cerramos todo al salir
-    game.stop()
-    pygame.quit()
-    sys.exit()
+if __name__ == "__main__":
+    game.run_independently()
