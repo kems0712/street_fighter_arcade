@@ -360,7 +360,7 @@ class StreetFighterGame(GameBase):
                         else:
                             self.start_fight()
 
-    def render(self, surface: pygame.Surface):
+    def render(self):
         self.game_canvas.fill((0,0,0))
         current_time = pygame.time.get_ticks()
 
@@ -500,7 +500,7 @@ class StreetFighterGame(GameBase):
 
         # 2.ESCALAR Y DIBUJAR EN SURFACE DEL SDK
         scaled_surface = pygame.transform.scale(self.game_canvas, (BASE_WIDTH, BASE_HEIGHT))
-        surface.blit(scaled_surface, (0, 0))
+        self.surface.blit(scaled_surface, (0, 0))
 
 
 if not pygame.get_init():
